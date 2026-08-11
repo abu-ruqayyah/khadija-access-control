@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Lab Evidence — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="glass-card p-4 p-md-5 shadow-lg border-0">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 bg-info bg-opacity-10 text-info rounded-circle mb-2">
+                        <i class="bi bi-cloud-upload-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Upload Defensive Lab Evidence</h3>
+                    <p class="text-muted small">Record PCAP captures, Nmap scans, or OWASP ZAP assessment reports</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('lab.upload_evidence') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-medium">Evidence Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Wireshark PCAP - Unencrypted Access Token Traffic" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tool_category" class="form-label fw-medium">Tool / Platform Category</label>
+                        <select class="form-select" id="tool_category" name="tool_category" required>
+                            <option value="Wireshark">Wireshark (Packet Capture Analysis)</option>
+                            <option value="Nmap">Nmap (Port & Permission Audit Scan)</option>
+                            <option value="OWASP ZAP">OWASP ZAP (Broken Access Control Scan)</option>
+                            <option value="Kali/Parrot">Kali / Parrot OS Defensive Tools</option>
+                            <option value="VirtualBox VM">VirtualBox VM Environment Verification</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-medium">Technical Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Brief explanation of lab configuration and execution environment..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="findings_summary" class="form-label fw-medium">Key Finding Summary</label>
+                        <textarea class="form-control" id="findings_summary" name="findings_summary" rows="2" placeholder="Key vulnerabilities or permission flaws observed..." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="file" class="form-label fw-medium">Select File Attachment</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">Allowed formats: PNG, JPG, PDF, PCAP, PCAPNG, TXT, JSON, XML, CSV (Max: 16 MB).</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-info text-dark fw-bold btn-lg w-100 rounded-pill shadow-sm">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload Evidence Artifact
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

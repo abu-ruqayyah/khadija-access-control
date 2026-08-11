@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Findings & Remediation — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Audit Findings & Remediation Advisor</h2>
+            <p class="text-muted small mb-0">Detailed risk explanations and actionable hardening recommendations</p>
+        </div>
+        
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <form method="GET" action="{{ url_for('audit.findings') }}" class="d-flex align-items-center gap-2">
+                <select name="session_id" class="form-select" onchange="this.form.submit()">
+                    {% for s in all_sessions %}
+                    <option value="{{ s.id }}" {% if audit_session and audit_session.id == s.id %}selected{% endif %}>
+                        Audit #{{ s.id }} ({{ s.created_at.strftime('%Y-%m-%d %H:%M') }}) - LPS: {{ s.least_privilege_score }}%
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            
+            {% if audit_session %}
+                <a href="{{ url_for('reports.download_pdf', session_id=audit_session.id) }}" class="btn btn-outline-danger text-nowrap rounded-pill">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF Report
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if audit_session %}
+    <div class="glass-card p-4 mb-4 border-start border-4 border-primary">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="fw-bold mb-1">{{ audit_session.title }}</h4>
+                <p class="text-muted small mb-0">Executed by <b>{{ audit_session.executed_by }}</b> on {{ audit_session.created_at.strftime('%A, %b %d %Y at %H:%M:%S UTC') }}</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="display-5 fw-bold text-primary">{{ audit_session.least_privilege_score }}%</span>
+                <span class="d-block text-muted small">Least Privilege Compliance Score</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for f in findings %}
+        <div class="col-12">
+            <div class="glass-card p-4 border-start border-4 {% if f.severity == 'CRITICAL' %}border-danger{% elif f.severity == 'HIGH' %}border-warning{% else %}border-info{% endif %}">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            {% if f.severity == 'CRITICAL' %}
+                                <span class="badge badge-critical">CRITICAL</span>
+                            {% elif f.severity == 'HIGH' %}
+                                <span class="badge badge-high">HIGH</span>
+                            {% else %}
+                                <span class="badge badge-moderate">{{ f.severity }}</span>
+                            {% endif %}
+                            
+                            <span class="badge bg-secondary font-monospace">{{ f.finding_type }}</span>
+                            <span class="fw-bold text-dark fs-5 ms-2">{{ f.target_name }}</span>
+                        </div>
+                        <p class="text-dark fw-semibold mb-0">{{ f.details }}</p>
+                    </div>
+                    
+                    <div class="mt-2 mt-md-0">
+                        {% if f.status == 'OPEN' %}
+                            <form method="POST" action="{{ url_for('audit.remediate_finding', finding_id=f.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="status" value="REMEDIATED">
+                                <button type="submit" class="btn btn-sm btn-success rounded-pill shadow-sm">
+                                    <i class="bi bi-check-circle me-1"></i> Mark Remediated
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="badge bg-success fs-6"><i class="bi bi-shield-check me-1"></i> REMEDIATED</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 bg-light p-3 rounded border">
+                    <div class="col-md-6">
+                        <span class="d-block fw-bold text-danger mb-1"><i class="bi bi-shield-exclamation me-1"></i> Risk Explanation:</span>
+                        <p class="small text-secondary mb-0">{{ f.risk_explanation }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="d-block fw-bold text-success mb-1"><i class="bi bi-wrench-adjustable me-1"></i> Actionable Hardening Recommendation:</span>
+                        <p class="small text-secondary mb-0">{{ f.remediation_recommendation }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="p-5 glass-card">
+                <i class="bi bi-shield-check fs-1 text-success d-block mb-3"></i>
+                <h4>Zero Access Control Findings</h4>
+                <p class="text-muted">No over-privilege risks or Separation of Duties conflicts detected in this session.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

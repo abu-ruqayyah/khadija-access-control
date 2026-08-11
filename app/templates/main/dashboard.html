@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Command Center Dashboard — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Access Control Command Center</h2>
+            <p class="text-muted small mb-0">Lead Auditor: <b>{{ current_user.full_name or current_user.username }}</b> &nbsp;|&nbsp; Role: <span class="badge bg-primary">{{ current_user.role }}</span></p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{{ url_for('audit.run_audit') }}" class="btn btn-primary rounded-pill shadow-sm">
+                <i class="bi bi-play-circle me-1"></i> Run New Audit
+            </a>
+            {% if latest_audit %}
+                <a href="{{ url_for('reports.download_pdf', session_id=latest_audit.id) }}" class="btn btn-outline-danger rounded-pill">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF Report
+                </a>
+                <a href="{{ url_for('reports.download_csv', session_id=latest_audit.id) }}" class="btn btn-outline-success rounded-pill">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Export CSV
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-3 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">LEAST PRIVILEGE SCORE</span>
+                    <i class="bi bi-shield-check fs-4 text-primary"></i>
+                </div>
+                <div class="d-flex align-items-baseline">
+                    <h2 class="fw-bold mb-0 text-primary">{{ latest_audit.least_privilege_score if latest_audit else '85.0' }}%</h2>
+                    <span class="ms-2 small text-muted">Aligned with NIST SP 800-53</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-3 h-100 border-start border-4 border-danger">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">OVER-PRIVILEGED ROLES</span>
+                    <i class="bi bi-exclamation-octagon fs-4 text-danger"></i>
+                </div>
+                <div class="d-flex align-items-baseline">
+                    <h2 class="fw-bold mb-0 text-danger">{{ latest_audit.overprivileged_roles_count if latest_audit else '0' }}</h2>
+                    <span class="ms-2 small text-muted">of {{ chart_data.total_roles }} roles</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-3 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">SoD TOXIC CONFLICTS</span>
+                    <i class="bi bi-diagram-3 fs-4 text-warning"></i>
+                </div>
+                <div class="d-flex align-items-baseline">
+                    <h2 class="fw-bold mb-0 text-warning">{{ latest_audit.sod_conflicts_count if latest_audit else '0' }}</h2>
+                    <span class="ms-2 small text-muted">Separation of Duties</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-3 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">GRANULAR PERMISSIONS</span>
+                    <i class="bi bi-key fs-4 text-info"></i>
+                </div>
+                <div class="d-flex align-items-baseline">
+                    <h2 class="fw-bold mb-0 text-info">{{ chart_data.total_permissions }}</h2>
+                    <span class="ms-2 small text-muted">Across 4 categories</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart text-primary me-2"></i>Role Risk Distribution</h5>
+                <div style="height: 260px; position: relative;">
+                    <canvas id="roleRiskChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-3"><i class="bi bi-list-task text-primary me-2"></i>Organizational Role Breakdown</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th>Role Name</th>
+                                <th>Department</th>
+                                <th>Permissions</th>
+                                <th>Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in roles %}
+                            <tr>
+                                <td><span class="fw-semibold">{{ r.name }}</span></td>
+                                <td><span class="badge bg-light text-dark border">{{ r.department }}</span></td>
+                                <td><span class="badge bg-primary rounded-pill">{{ r.permissions|length }}</span></td>
+                                <td>
+                                    {% set score = r.risk_score() %}
+                                    {% if score >= 20 %}
+                                        <span class="badge badge-critical">CRITICAL ({{ score }})</span>
+                                    {% elif score >= 10 %}
+                                        <span class="badge badge-high">HIGH ({{ score }})</span>
+                                    {% else %}
+                                        <span class="badge badge-moderate">MODERATE ({{ score }})</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Active Audit Findings</h5>
+                    <a href="{{ url_for('audit.findings') }}" class="btn btn-sm btn-outline-primary rounded-pill">View All Findings</a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Severity</th>
+                                <th>Type</th>
+                                <th>Target</th>
+                                <th>Finding Summary</th>
+                                <th>Remediation Action</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in recent_findings %}
+                            <tr>
+                                <td>
+                                    {% if f.severity == 'CRITICAL' %}
+                                        <span class="badge badge-critical">CRITICAL</span>
+                                    {% elif f.severity == 'HIGH' %}
+                                        <span class="badge badge-high">HIGH</span>
+                                    {% else %}
+                                        <span class="badge badge-moderate">{{ f.severity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="font-monospace small">{{ f.finding_type }}</span></td>
+                                <td><b>{{ f.target_name }}</b></td>
+                                <td class="small">{{ f.details }}</td>
+                                <td class="small text-muted">{{ f.remediation_recommendation }}</td>
+                                <td>
+                                    {% if f.status == 'OPEN' %}
+                                        <span class="badge bg-danger">OPEN</span>
+                                    {% else %}
+                                        <span class="badge bg-success">REMEDIATED</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No active audit findings recorded. Click "Run New Audit" above.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('roleRiskChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Critical Risk Roles', 'High Risk Roles', 'Moderate Risk Roles'],
+                datasets: [{
+                    data: [{{ chart_data.critical_count }}, {{ chart_data.high_count }}, {{ chart_data.moderate_count }}],
+                    backgroundColor: ['#DC2626', '#EA580C', '#D97706'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Access Control Audit — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-md-5 shadow-lg border-0">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 bg-primary bg-opacity-10 text-primary rounded-circle mb-2">
+                        <i class="bi bi-play-circle-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Run Automated Least Privilege Audit</h3>
+                    <p class="text-muted small">Execute live access control checks across all roles, users, and entitlements</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('audit.run_audit') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-4">
+                        <label for="session_title" class="form-label fw-medium">Audit Session Title</label>
+                        <input type="text" class="form-control form-control-lg" id="session_title" name="session_title" value="Least Privilege & SoD Compliance Audit" required>
+                        <div class="form-text">Give this audit session a descriptive title for organizational record-keeping.</div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded border mb-4 small">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-list-check me-1"></i> Automated Verification Vectors:</h6>
+                        <ul class="mb-0 ps-3 text-secondary">
+                            <li>Check for excessive CRITICAL / HIGH risk permission accumulation per role.</li>
+                            <li>Detect Separation of Duties (SoD) toxic permission combinations.</li>
+                            <li>Flag cross-departmental administrative rights assigned to non-IT roles.</li>
+                            <li>Identify dormant inactive administrative user accounts retaining privileges.</li>
+                            <li>Compute aggregate organizational Least Privilege Score (LPS).</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm">
+                        <i class="bi bi-cpu me-2"></i> Start Automated Audit Scan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

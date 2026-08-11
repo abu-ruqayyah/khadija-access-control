@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Technical Lab Methodology — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="glass-card p-4 p-md-5 mb-4">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-info bg-opacity-10 text-dark rounded-pill mb-3">
+                    <i class="bi bi-cpu-fill text-info"></i>
+                    <span class="small font-monospace fw-bold">SAFE DEFENSIVE CYBERSECURITY LAB</span>
+                </div>
+                
+                <h1 class="fw-bold mb-3">Access Control Audit — Technical VM Lab Methodology</h1>
+                <p class="lead text-secondary mb-4">
+                    Authoritative documentation of the defensive laboratory environment, virtualization setup, security assessment tools, and ethical testing boundaries established for student <b>Khadija Bukar (FE/26/4554984566)</b>.
+                </p>
+
+                <div class="alert alert-warning d-flex align-items-center border-0 shadow-sm mb-4">
+                    <i class="bi bi-shield-exclamation fs-3 me-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Ethical Testing & Authorization Notice</h6>
+                        <p class="small mb-0">
+                            All security assessments and packet analyses documented in this project were conducted strictly inside an isolated virtual network environment using VirtualBox VMs. Testing targeted only student-owned systems and intentionally vulnerable lab targets.
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h3 class="fw-bold text-dark mb-3"><i class="bi bi-diagram-3 text-primary me-2"></i>1. Laboratory Virtualization Architecture</h3>
+                <p class="text-secondary">
+                    The lab was constructed using <b>Oracle VirtualBox</b> operating on a host system running host-only and internal virtual network switches (`192.168.56.0/24`).
+                </p>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Virtual Machine Node</th>
+                                <th>OS / Distro</th>
+                                <th>Network Role</th>
+                                <th>Installed Audit Tools</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><b>Audit Workstation</b></td>
+                                <td>Kali Linux / Parrot OS</td>
+                                <td>Primary Auditor (`192.168.56.10`)</td>
+                                <td>Nmap, Wireshark, OWASP ZAP, Python 3</td>
+                            </tr>
+                            <tr>
+                                <td><b>Target System A</b></td>
+                                <td>Ubuntu Server 22.04 LTS</td>
+                                <td>Access Audit Server (`192.168.56.20`)</td>
+                                <td>Flask, PostgreSQL, Gunicorn, Audit Logs</td>
+                            </tr>
+                            <tr>
+                                <td><b>Target System B</b></td>
+                                <td>Metasploitable 3 / DVWA</td>
+                                <td>Vulnerable Target (`192.168.56.30`)</td>
+                                <td>Broken Access Control Benchmarks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-3"><i class="bi bi-tools text-primary me-2"></i>2. Toolchain Execution Methodology</h3>
+
+                <div class="accordion mb-4" id="toolchainAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNmap">
+                                <i class="bi bi-search text-primary me-2"></i> Nmap (Port & Permission Audit Scan)
+                            </button>
+                        </h2>
+                        <div id="collapseNmap" class="accordion-collapse collapse show" data-bs-parent="#toolchainAccordion">
+                            <div class="accordion-body text-secondary">
+                                Nmap NSE scripts were executed to audit open administrative services, SMB share permissions, and unauthenticated RPC endpoints.
+                                <pre class="bg-dark text-light p-3 rounded mt-2 font-monospace small"># Nmap Script Scan for Exposed Shares & Administrative Ports
+nmap -sV -sC --script=smb-enum-shares,smb-enum-users 192.168.56.20 -oX nmap_service_permission_audit.xml</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWireshark">
+                                <i class="bi bi-reception-4 text-info me-2"></i> Wireshark (Packet Capture Analysis)
+                            </button>
+                        </h2>
+                        <div id="collapseWireshark" class="accordion-collapse collapse" data-bs-parent="#toolchainAccordion">
+                            <div class="accordion-body text-secondary">
+                                Wireshark was used to capture network traffic during user login and API invocation, verifying that authorization headers and session tokens are transmitted securely over HTTPS and not leaked in plaintext.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseZAP">
+                                <i class="bi bi-bug text-danger me-2"></i> OWASP ZAP (Broken Access Control Scan)
+                            </button>
+                        </h2>
+                        <div id="collapseZAP" class="accordion-collapse collapse" data-bs-parent="#toolchainAccordion">
+                            <div class="accordion-body text-secondary">
+                                OWASP ZAP Access Control Testing Add-on was executed to test for horizontal and vertical privilege escalation vectors across all endpoints.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center pt-3">
+                    <a href="{{ url_for('lab.list_evidence') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-folder-check me-1"></i> View Uploaded Lab Evidence Artifacts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

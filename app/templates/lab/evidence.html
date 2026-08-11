@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Safe Lab Evidence Portal — Khadija Bukar{% endblock %}
+
+{% block content %}
+<div class="container px-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-folder-check text-info me-2"></i>Safe Cyber Lab Evidence Portal</h2>
+            <p class="text-muted small mb-0">Controlled technical assessment artifacts (VirtualBox, Kali/Parrot, Wireshark, Nmap, OWASP ZAP)</p>
+        </div>
+        
+        {% if current_user.is_authenticated %}
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('lab.upload_evidence') }}" class="btn btn-info text-dark fw-semibold rounded-pill shadow-sm">
+                <i class="bi bi-cloud-upload me-1"></i> Upload New Evidence
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        {% for e in evidences %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-card p-4 h-100 d-flex flex-column border-top border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-dark text-info font-monospace">{{ e.tool_category }}</span>
+                    <span class="small text-muted">{{ e.uploaded_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                
+                <h5 class="fw-bold text-dark mb-2">{{ e.title }}</h5>
+                <p class="small text-secondary mb-3">{{ e.description }}</p>
+                
+                <div class="bg-light p-3 rounded border mb-3 mt-auto">
+                    <span class="d-block fw-semibold text-dark small mb-1"><i class="bi bi-search me-1"></i> Technical Finding:</span>
+                    <span class="small text-muted d-block">{{ e.findings_summary }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span class="small text-muted">Uploaded by: <b>{{ e.uploaded_by }}</b></span>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('lab.download_evidence', evidence_id=e.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <i class="bi bi-download me-1"></i> Download File
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-card p-5">
+                <i class="bi bi-folder-x fs-1 text-muted d-block mb-3"></i>
+                <h4>No Lab Evidence Uploaded Yet</h4>
+                <p class="text-muted">Upload technical evidence files captured during authorized laboratory testing.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
