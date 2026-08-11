@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: khadija-access-control
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT wsgi:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: SEED_DEMO_DATA
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: khadija-access-control-db
+          property: connectionString
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: khadija-access-control-db
+    databaseName: access_audit_db
+    user: audit_user
+    plan: free
