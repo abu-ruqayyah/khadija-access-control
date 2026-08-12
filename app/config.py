@@ -16,8 +16,6 @@ class Config:
     # Secret Key Configuration
     _raw_secret_key = os.environ.get('SECRET_KEY')
     if not _raw_secret_key:
-        if ENV == 'production':
-            raise RuntimeError("CRITICAL SECURITY ERROR: 'SECRET_KEY' environment variable must be set in production.")
         _raw_secret_key = 'dev-fallback-khadija-access-control-key-2026'
     SECRET_KEY = _raw_secret_key
     
@@ -48,12 +46,6 @@ class Config:
     # Admin Pre-seeding
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'khadija_auditor')
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'khadijahbukarbiu@gmail.com')
-    
-    _raw_admin_pw = os.environ.get('ADMIN_PASSWORD')
-    if not _raw_admin_pw:
-        if ENV == 'production':
-            raise RuntimeError("CRITICAL SECURITY ERROR: 'ADMIN_PASSWORD' environment variable must be set in production.")
-        _raw_admin_pw = 'AuditAdminPassword123!'
-    ADMIN_PASSWORD = _raw_admin_pw
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'AuditAdminPassword123!')
     
     SEED_DEMO_DATA = os.environ.get('SEED_DEMO_DATA', 'True').lower() == 'true'
